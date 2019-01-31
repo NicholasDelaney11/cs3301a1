@@ -1,3 +1,5 @@
+
+
 // Skeletal program for the "Image Histogram" assignment
 // Written by:  Minglun Gong
 
@@ -69,14 +71,15 @@ public class ImageHistogram extends Frame implements ActionListener {
 	// Action listener for button click events
 	public void actionPerformed(ActionEvent e) {
             if ( ((Button)e.getSource()).getLabel().equals("Aggressive Stretch") ) {
-                target = new ImageCanvas(input);
+                // get image histogram
+  
                 int red=0, green=0, blue=0; 
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
                 for ( int y=0, i=0 ; y<height ; y++ ) {
                     for ( int x=0 ; x<width ; x++, i++ ) {
-                        Color clr = new Color(input.getRGB(x, y));
+                        Color clr = new Color(source.image.getRGB(x, y));
                         red = clr.getRed();
                         green = clr.getGreen();
                         blue = clr.getBlue();
@@ -85,57 +88,62 @@ public class ImageHistogram extends Frame implements ActionListener {
                         bH[blue]++;
                     }
                 }
+                // get cut off value
+                float cutoff = Float.valueOf(texThres.getText());              
+                float cP = cutoff / 100 * 256;
+                int cutoffPercent = (int) cP;
                 
-                int cutoff = Integer.valueOf(texThres.getText());
-                int cutoffPercent = cutoff / 100 * 256;
                 
-                int rMin = 0;
-                int rMax = 255;
-                while (rH[rMin] == 0 && rMin >= cutoffPercent){
+                // find min/max for red, green and blue channels
+                int rMin = cutoffPercent;
+                int rMax = 255 - cutoffPercent;
+                while (rH[rMin] == 0) {
                     rMin++;
                 }
-                while (rH[rMax] == 0 && rMax <= 256 - cutoffPercent) {
+                while (rH[rMax] == 0) {
                     rMax--;
                 }
-                int gMin = 0;
-                int gMax = 255;
-                while (gH[gMin] == 0 && gMin >= cutoffPercent){
+                int gMin = cutoffPercent;
+                int gMax = 255 - cutoffPercent;
+                while (gH[gMin] == 0){
                     gMin++;
                 }
-                while (gH[gMax] == 0 && gMax <= 256 - cutoffPercent) {
+                while (gH[gMax] == 0) {
                     gMax--;
-                }
-                int bMin = 0;
-                int bMax = 255;
-                while (bH[bMin] == 0 && bMin >= cutoffPercent){
+                }    
+                int bMin = cutoffPercent;
+                int bMax = 255 - cutoffPercent;
+                while (bH[bMin] == 0){
                     bMin++;
                 }
-                while (bH[bMax] == 0 && bMax <= 256 - cutoffPercent) {
+                while (bH[bMax] == 0) {
                     bMax--;
                 }
+                
+                System.out.println(rMin + " " + rMax + " " + gMin + " " + gMax + " " + bMin + " " + bMax);
+                
+                // apply aggressive stretch
                 for ( int y=0, i=0 ; y<height ; y++ ) {
                     for ( int x=0 ; x<width ; x++, i++ ) {
-                      Color clr = new Color (source.image.getRGB(x, y));
-                      red = (clr.getRed() - rMin) * 256 / (rMax - rMin);
-                      green = (clr.getGreen() - gMin) * 256 / (gMax - gMin);
-                      blue = (clr.getBlue() - gMin) * 256 / (gMax - gMin);
-                     target.image.setRGB(x,y, red<<16 | green<<8 | blue);
-                     target.repaint();
+                        Color clr = new Color (source.image.getRGB(x, y));
+                        red = (clr.getRed() - rMin) * 256 / (rMax - rMin);
+                        green = (clr.getGreen() - gMin) * 256 / (gMax - gMin);
+                        blue = (clr.getBlue() - bMin) * 256 / (bMax - bMin);
+                        target.image.setRGB(x,y, red<<16 | green<<8 | blue);
                     }
-                }
-                 
-                
+                }                 
+                target.repaint();
             }
             
             if ( ((Button)e.getSource()).getLabel().equals("Histogram Stretch") ) {
-       
+                // get histogram
                 int red=0, green=0, blue=0; 
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
                 for ( int y=0, i=0 ; y<height ; y++ ) {
                     for ( int x=0 ; x<width ; x++, i++ ) {
-                        Color clr = new Color(input.getRGB(x, y));
+                        Color clr = new Color(source.image.getRGB(x, y));
                         red = clr.getRed();
                         green = clr.getGreen();
                         blue = clr.getBlue();
@@ -144,7 +152,7 @@ public class ImageHistogram extends Frame implements ActionListener {
                         bH[blue]++;
                     }
                 }
-              
+                // find min/max values for r,g and b channels
                 int rMin = 0;
                 int rMax = 255;
                 while (rH[rMin] == 0){
@@ -169,32 +177,34 @@ public class ImageHistogram extends Frame implements ActionListener {
                 while (bH[bMax] == 0) {
                     bMax--;
                 }
+                // apply histogram stretch
                 for ( int y=0, i=0 ; y<height ; y++ ) {
                     for ( int x=0 ; x<width ; x++, i++ ) {
                       Color clr = new Color (source.image.getRGB(x, y));
                       red = (clr.getRed() - rMin) * 256 / (rMax - rMin);
                       green = (clr.getGreen() - gMin) * 256 / (gMax - gMin);
-                      blue = (clr.getBlue() - gMin) * 256 / (gMax - gMin);
+                      blue = (clr.getBlue() - bMin) * 256 / (bMax - bMin);
                      target.image.setRGB(x,y, red<<16 | green<<8 | blue);
-                     target.repaint();
                     }
                 }
+                target.repaint();
+
             }
-                
-            if ( ((Button)e.getSource()).getLabel().equals("Display Histogram") ) {
-		int red=0, green=0, blue=0; 
+            
+            if ( ((Button)e.getSource()).getLabel().equals("Histogram Equalization") ) {
+                int red = 0, green = 0, blue = 0;
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
-                for ( int y=0, i=0 ; y<height ; y++ ) {
-                    for ( int x=0 ; x<width ; x++, i++ ) {
-                        Color clr = new Color(input.getRGB(x, y));
-                        red = clr.getRed();
-                        green = clr.getGreen();
-                        blue = clr.getBlue();
-                        rH[red]++;
-                        gH[green]++;
-                        bH[blue]++;
+                for (int y = 0, i = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++, i++) {
+                       Color clr = new Color(source.image.getRGB(x, y));
+                       red = clr.getRed();
+                       green = clr.getGreen();
+                       blue = clr.getBlue();
+                       rH[red]++;
+                       gH[green]++;
+                       bH[blue]++;
                     }
                 }
                 float[] rHn = new float[256];
@@ -206,40 +216,42 @@ public class ImageHistogram extends Frame implements ActionListener {
                     bHn[i] = (float)bH[i] / (width * height);
                 }
                 
-                int rLineY = (int) rHn[0]; 
-                int rLineX = 0;
-                int gLineY = (int) gHn[0];
-                int gLineX = 0;
-                for (int i = 1; i<=255; i++) {
-                    System.out.println(rHn[i]);
-                    plot.drawLineSegment(Color.RED, rLineX, rLineY, i, (int) rHn[i]);
-                    //plot.drawLineSegment(Color.GREEN, gLineX, gLineY, i, gH[i]);
-                }
-             
-                
-                
             }
                 
-                
-                
-		/*if ( ((Button)e.getSource()).getLabel().equals("Display Histogram") ) {
-			float red=0, green=0, blue=0;
-			for ( int y=0, i=0 ; y<height ; y++ ) {
-				for ( int x=0 ; x<width ; x++, i++ ) {
-					Color clr = new Color(input.getRGB(x, y));
-					red += clr.getRed();
-					green += clr.getGreen();
-					blue += clr.getBlue();
-				}
-                        }        
-			red /= width * height;
-			green /= width * height;
-			blue /= width * height;
-			plot.setMeanColor(new Color((int)red,(int)green,(int)blue));
-		}*/
+            if ( ((Button)e.getSource()).getLabel().equals("Display Histogram") ) {
+		int red = 0, green = 0, blue = 0;
+                int[] rH = new int[256];
+                int[] gH = new int[256];
+                int[] bH = new int[256];
+                for (int y = 0, i = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++, i++) {
+                       Color clr = new Color(source.image.getRGB(x, y));
+                       red = clr.getRed();
+                       green = clr.getGreen();
+                       blue = clr.getBlue();
+                       rH[red]++;
+                       gH[green]++;
+                       bH[blue]++;
+                    }
+                }
+                float[] rHn = new float[256];
+                float[] gHn = new float[256];
+                float[] bHn = new float[256];
+                for (int i = 0; i <= 255; i++) {
+                    rHn[i] = (float)rH[i] / (width * height);
+                    gHn[i] = (float)gH[i] / (width * height);
+                    bHn[i] = (float)bH[i] / (width * height);
+                }
+
+                for (int i = 1; i <= 255; i++) {
+                    plot.drawLineSegment(Color.RED, i - 1, rH[i - 1], i, rH[i]);
+                    plot.drawLineSegment(Color.GREEN, i - 1, gH[i - 1], i, gH[i]);
+                    plot.drawLineSegment(Color.BLUE, i-1, bH[i-1], i, bH[i]);
+                }                
+            }
 	}
 	public static void main(String[] args) {
-		new ImageHistogram(args.length==1 ? args[0] : "baboon.png");
+		new ImageHistogram(args.length==1 ? args[0] : "signal_hill.png");
 	}
 }
 
@@ -248,7 +260,9 @@ class PlotCanvas extends Canvas {
 	// lines for plotting axes and mean color locations
 	LineSegment x_axis, y_axis;
 	LineSegment red, green, blue;
-        LineSegment line;
+        ArrayList<LineSegment> redList = new ArrayList();
+        ArrayList<LineSegment> greenList = new ArrayList();
+        ArrayList<LineSegment> blueList = new ArrayList();
 	boolean showMean = false;
         boolean showHistogram = false;
 
@@ -265,9 +279,18 @@ class PlotCanvas extends Canvas {
 		repaint();
 	}
         public void drawLineSegment(Color clr, int x0, int y0, int x1, int y1) {
-            line = new LineSegment(clr, x0, y0, x1, y1);
-            showHistogram = true;
-            repaint();
+            if (clr.equals(Color.RED)) {
+            redList.add(new LineSegment(clr, x0, y0, x1, y1));
+        }
+        if (clr.equals(Color.BLUE)) {
+            blueList.add(new LineSegment(clr, x0, y0, x1, y1));
+        }
+        if (clr.equals(Color.GREEN)) {
+            greenList.add(new LineSegment(clr, x0, y0, x1, y1));
+        }
+
+        showHistogram = true;
+        repaint();
         }
 	// redraw the canvas
 	public void paint(Graphics g) {
@@ -277,9 +300,19 @@ class PlotCanvas extends Canvas {
 		x_axis.draw(g, xoffset, yoffset, getHeight());
 		y_axis.draw(g, xoffset, yoffset, getHeight());
 		if ( showHistogram ) {
-			line.draw(g, xoffset, yoffset, getHeight());
-			//green.draw(g, xoffset, yoffset, getHeight());
-			//blue.draw(g, xoffset, yoffset, getHeight());
+	   // for (int i = 0; i < redList.size(); i++) {
+           //     LineSegment line = redList.get(i);
+           //     line.draw(g, xoffset, yoffset, getHeight());
+           // }
+            for (int i = 0; i < greenList.size(); i++) {
+                LineSegment line = greenList.get(i);
+                line.draw(g, xoffset, yoffset, getHeight());
+            }
+
+            //for (int i = 0; i < blueList.size(); i++) {
+            //    LineSegment line = blueList.get(i);
+            //    line.draw(g, xoffset, yoffset, getHeight());
+           // }
 		}
 	}
 }
