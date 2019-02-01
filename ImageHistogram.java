@@ -1,3 +1,4 @@
+package pkg3301a1;
 
 
 // Skeletal program for the "Image Histogram" assignment
@@ -68,21 +69,24 @@ public class ImageHistogram extends Frame implements ActionListener {
 			System.exit(0);
 		}
 	}
+
 	// Action listener for button click events
 	public void actionPerformed(ActionEvent e) {
             if ( ((Button)e.getSource()).getLabel().equals("Aggressive Stretch") ) {
                 // get image histogram
-  
+                
                 int red=0, green=0, blue=0; 
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
-                for ( int y=0, i=0 ; y<height ; y++ ) {
-                    for ( int x=0 ; x<width ; x++, i++ ) {
+                for ( int y=0 ; y<height ; y++ ) {
+                    for ( int x=0 ; x<width ; x++ ) {
                         Color clr = new Color(source.image.getRGB(x, y));
+                        target.image.setRGB(x, y, source.image.getRGB(x,y));
                         red = clr.getRed();
                         green = clr.getGreen();
-                        blue = clr.getBlue();
+                        blue = clr.getBlue();  
+                        target.image.setRGB(x,y, red<<16 | green<<8 | blue);
                         rH[red]++;
                         gH[green]++;
                         bH[blue]++;
@@ -92,8 +96,7 @@ public class ImageHistogram extends Frame implements ActionListener {
                 float cutoff = Float.valueOf(texThres.getText());              
                 float cP = cutoff / 100 * 256;
                 int cutoffPercent = (int) cP;
-                
-                
+                               
                 // find min/max for red, green and blue channels
                 int rMin = cutoffPercent;
                 int rMax = 255 - cutoffPercent;
@@ -123,16 +126,17 @@ public class ImageHistogram extends Frame implements ActionListener {
                 System.out.println(rMin + " " + rMax + " " + gMin + " " + gMax + " " + bMin + " " + bMax);
                 
                 // apply aggressive stretch
-                for ( int y=0, i=0 ; y<height ; y++ ) {
-                    for ( int x=0 ; x<width ; x++, i++ ) {
+                for ( int y=0; y<height ; y++ ) {
+                    for ( int x=0 ; x<width ; x++ ) {
                         Color clr = new Color (source.image.getRGB(x, y));
                         red = (clr.getRed() - rMin) * 256 / (rMax - rMin);
                         green = (clr.getGreen() - gMin) * 256 / (gMax - gMin);
                         blue = (clr.getBlue() - bMin) * 256 / (bMax - bMin);
                         target.image.setRGB(x,y, red<<16 | green<<8 | blue);
                     }
-                }                 
+                }         
                 target.repaint();
+                
             }
             
             if ( ((Button)e.getSource()).getLabel().equals("Histogram Stretch") ) {
@@ -141,8 +145,8 @@ public class ImageHistogram extends Frame implements ActionListener {
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
-                for ( int y=0, i=0 ; y<height ; y++ ) {
-                    for ( int x=0 ; x<width ; x++, i++ ) {
+                for ( int y=0 ; y<height ; y++ ) {
+                    for ( int x=0 ; x<width ; x++ ) {
                         Color clr = new Color(source.image.getRGB(x, y));
                         red = clr.getRed();
                         green = clr.getGreen();
@@ -178,8 +182,8 @@ public class ImageHistogram extends Frame implements ActionListener {
                     bMax--;
                 }
                 // apply histogram stretch
-                for ( int y=0, i=0 ; y<height ; y++ ) {
-                    for ( int x=0 ; x<width ; x++, i++ ) {
+                for ( int y=0 ; y<height ; y++ ) {
+                    for ( int x=0 ; x<width ; x++) {
                       Color clr = new Color (source.image.getRGB(x, y));
                       red = (clr.getRed() - rMin) * 256 / (rMax - rMin);
                       green = (clr.getGreen() - gMin) * 256 / (gMax - gMin);
@@ -216,6 +220,16 @@ public class ImageHistogram extends Frame implements ActionListener {
                     bHn[i] = (float)bH[i] / (width * height);
                 }
                 
+                //float[] rgb = source.image.getRGBColorComponents( null );
+                //float r = rgb[0];
+                //float g = rgb[1];
+                //float b = rgb[2];
+
+                //float min = Math.min(r, Math.min(g, b));
+                //float max = Math.max(r, Math.max(g, b));
+
+                //float l = (max + min) / 2*100;
+                
             }
                 
             if ( ((Button)e.getSource()).getLabel().equals("Display Histogram") ) {
@@ -223,9 +237,9 @@ public class ImageHistogram extends Frame implements ActionListener {
                 int[] rH = new int[256];
                 int[] gH = new int[256];
                 int[] bH = new int[256];
-                for (int y = 0, i = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++, i++) {
-                       Color clr = new Color(source.image.getRGB(x, y));
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                       Color clr = new Color(target.image.getRGB(x, y));
                        red = clr.getRed();
                        green = clr.getGreen();
                        blue = clr.getBlue();
